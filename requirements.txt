@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+psycopg[binary]
+pgvector
+python-dotenv
+alembic
+openai
+anthropic
+pytest
+httpx
+black
+google-genai
