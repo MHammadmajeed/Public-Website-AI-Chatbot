@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     lead_email_to: str = "info@moinsystemsai.com"
 
     rate_limit: str = "60/minute"
+    retrieval_top_k: int = 5 
+    retrieval_threshold: float = 0.55 
 
     @property
     def allowed_origins_list(self) -> list[str]:

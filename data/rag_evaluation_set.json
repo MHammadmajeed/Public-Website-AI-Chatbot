@@ -1,0 +1,194 @@
+[
+  {
+    "id": "EVAL-001",
+    "query": "What does MoinSystems AI do?",
+    "expected_record": "company_001",
+    "expected_intent": "company_overview"
+  },
+  {
+    "id": "EVAL-002",
+    "query": "Do you build custom software?",
+    "expected_record": "faq_001",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-003",
+    "query": "Can you build a SaaS product?",
+    "expected_record": "faq_004",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-004",
+    "query": "Can you build an AI agent for lead qualification?",
+    "expected_record": "service_006",
+    "expected_intent": "ai_agents"
+  },
+  {
+    "id": "EVAL-005",
+    "query": "Do you build AI chatbots?",
+    "expected_record": "service_007",
+    "expected_intent": "ai_chatbots"
+  },
+  {
+    "id": "EVAL-006",
+    "query": "Can you make an AI voice agent?",
+    "expected_record": "faq_007",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-007",
+    "query": "Do you work with n8n?",
+    "expected_record": "faq_008",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-008",
+    "query": "Can n8n connect my CRM to AI?",
+    "expected_record": "service_010",
+    "expected_intent": "n8n_automation"
+  },
+  {
+    "id": "EVAL-009",
+    "query": "Can you integrate Shopify?",
+    "expected_record": "faq_010",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-010",
+    "query": "Do you develop APIs?",
+    "expected_record": "service_011",
+    "expected_intent": "api_development_and_integrations"
+  },
+  {
+    "id": "EVAL-011",
+    "query": "Can you build a mobile app?",
+    "expected_record": "faq_003",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-012",
+    "query": "Do you provide UI UX design?",
+    "expected_record": "faq_015",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-013",
+    "query": "Can you deploy my application?",
+    "expected_record": "faq_016",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-014",
+    "query": "Can you maintain existing software?",
+    "expected_record": "faq_017",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-015",
+    "query": "Can you modernize an old application?",
+    "expected_record": "service_020",
+    "expected_intent": "software_modernization"
+  },
+  {
+    "id": "EVAL-016",
+    "query": "How much does a project cost?",
+    "expected_record": "phase2_pricing_001",
+    "expected_intent": "pricing"
+  },
+  {
+    "id": "EVAL-017",
+    "query": "I need a quote for an AI chatbot.",
+    "expected_record": "phase2_pricing_001",
+    "expected_intent": "quote_request"
+  },
+  {
+    "id": "EVAL-018",
+    "query": "We manually process leads. Can you automate this?",
+    "expected_record": "conversation_002",
+    "expected_intent": "conversation_example"
+  },
+  {
+    "id": "EVAL-019",
+    "query": "I want to hire MoinSystems AI.",
+    "expected_record": "lead_004",
+    "expected_intent": "human_handoff"
+  },
+  {
+    "id": "EVAL-020",
+    "query": "What technologies do you use?",
+    "expected_record": "tech_001",
+    "expected_intent": "technology_stack"
+  },
+  {
+    "id": "EVAL-021",
+    "query": "What databases can you work with?",
+    "expected_record": "tech_003",
+    "expected_intent": "technology_stack"
+  },
+  {
+    "id": "EVAL-022",
+    "query": "What is your development process?",
+    "expected_record": "process_001",
+    "expected_intent": "process"
+  },
+  {
+    "id": "EVAL-023",
+    "query": "I have an existing application and want to add AI.",
+    "expected_record": "faq_009",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-024",
+    "query": "Can you build an MVP?",
+    "expected_record": "faq_014",
+    "expected_intent": "faq"
+  },
+  {
+    "id": "EVAL-025",
+    "query": "Do you develop e-commerce systems?",
+    "expected_record": "service_012",
+    "expected_intent": "e-commerce_development"
+  },
+  {
+    "id": "EVAL-026",
+    "query": "Can you build custom Shopify functionality?",
+    "expected_record": "service_013",
+    "expected_intent": "shopify_development"
+  },
+  {
+    "id": "EVAL-027",
+    "query": "Do you handle backend development?",
+    "expected_record": "service_014",
+    "expected_intent": "backend_development"
+  },
+  {
+    "id": "EVAL-028",
+    "query": "Can you handle cloud and DevOps?",
+    "expected_record": "service_017",
+    "expected_intent": "cloud_and_devops"
+  },
+  {
+    "id": "EVAL-029",
+    "query": "I want to know your project pricing. What information do you need?",
+    "expected_record": "phase2_pricing_001",
+    "expected_intent": "pricing"
+  },
+  {
+    "id": "EVAL-030",
+    "query": "I want to start a project. Can you contact me?",
+    "expected_record": "phase2_lead_capture_001",
+    "expected_intent": "lead_capture"
+  },
+  {
+    "id": "EVAL-031",
+    "query": "Send my project information to your team.",
+    "expected_record": "phase2_email_001",
+    "expected_intent": "lead_notification"
+  },
+  {
+    "id": "EVAL-032",
+    "query": "Can I see your previous projects?",
+    "expected_record": "phase2_portfolio_001",
+    "expected_intent": "portfolio_question"
+  }
+]
