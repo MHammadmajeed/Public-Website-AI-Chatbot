@@ -1,7 +1,7 @@
 """Lightweight, deterministic intent detection (task 4.5).
 
 This is intentionally a simple keyword/pattern matcher, not an ML
-classifier — the knowledge base has a small, well-defined set of
+classifier - the knowledge base has a small, well-defined set of
 categories, and a deterministic approach is easier to test, debug, and
 explain than a black-box classifier for a project this size.
 
@@ -42,6 +42,24 @@ CONTACT_PATTERNS = [
     r"\bwant to start\b",
 ]
 
+TECHNOLOGY_PATTERNS = [
+    r"\bwhat technolog(y|ies)\b",
+    r"\btech(nology)? stack\b",
+    r"\bprogramming languages?\b",
+    r"\b(which|what) (framework|language|database|cloud)s?\b",
+    r"\bdo you use\b",
+]
+
+SERVICES_PATTERNS = [
+    r"\bwhat services\b",
+    r"\bservices\b",
+    r"\bdo you (build|develop|make|create|offer|provide)\b",
+    r"\bcan you (build|develop|make|create)\b",
+    r"\bcustom software\b",
+    r"\bweb (development|design)\b",
+    r"\bmobile app",
+]
+
 
 @dataclass
 class DetectedIntent:
@@ -59,12 +77,20 @@ def detect_intent(query: str) -> DetectedIntent:
     for pattern in PRICING_PATTERNS:
         if re.search(pattern, q):
             # Pricing content isn't in the ingested knowledge base yet
-            # (see Day 2 notes) — no category filter, retrieval will
+            # (see Day 2 notes) - no category filter, retrieval will
             # correctly return no strong match and the fallback applies.
             return DetectedIntent(name="pricing", category_filter=None)
 
     for pattern in CONTACT_PATTERNS:
         if re.search(pattern, q):
             return DetectedIntent(name="contact_request", category_filter=None)
+
+    for pattern in TECHNOLOGY_PATTERNS:
+        if re.search(pattern, q):
+            return DetectedIntent(name="technology", category_filter=None)
+
+    for pattern in SERVICES_PATTERNS:
+        if re.search(pattern, q):
+            return DetectedIntent(name="services", category_filter=None)
 
     return DetectedIntent(name="general", category_filter=None)

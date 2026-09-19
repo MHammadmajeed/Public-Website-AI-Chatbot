@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.chat.orchestrator import handle_message
 from app.db.models import ChatMessage, ChatSession
 from app.db.session import get_db
+from app.llm.base import LLMUnavailableError
 from app.schemas.chat import ChatMessageRequest, ChatMessageResponse
 
 router = APIRouter()
@@ -40,7 +41,19 @@ def post_chat_message(payload: ChatMessageRequest, db: Session = Depends(get_db)
     db.add(user_message)
     db.flush()
 
-    reply = handle_message(db, session.id, payload.message)
+    try:
+        reply = handle_message(
+            db,
+            session.id,
+            payload.message,
+            exclude_message_id=user_message.id,
+        )
+    except LLMUnavailableError:
+        db.rollback()
+        raise HTTPException(
+            status_code=503,
+            detail="The assistant is temporarily busy. Please try again in a moment.",
+        )
 
     assistant_message = ChatMessage(
         session_id=session.id,
