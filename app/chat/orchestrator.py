@@ -15,6 +15,7 @@ This module has no FastAPI/HTTP concerns - the route (app/api/v1/chat.py)
 is a thin wrapper around `handle_message`.
 """
 
+import re
 from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
@@ -31,6 +32,10 @@ from app.rag.retriever import build_context, retrieve
 # continuity. Kept small deliberately - task 4.4 explicitly calls for
 # "recent messages required for continuity", not unlimited history.
 RECENT_MESSAGE_WINDOW = 6
+
+_FOLLOWUP_MARKERS = re.compile(
+    r"\b(that|it|those|this|more|else|also|too|same)\b", re.IGNORECASE
+)
 
 
 @dataclass
@@ -53,6 +58,19 @@ def _recent_history(db: Session, session_id, exclude_message_id=None) -> list[LL
     return [LLMMessage(role=row.role, content=row.content) for row in rows]
 
 
+def _followup_hint(user_text: str, history: list[LLMMessage]) -> str | None:
+    """Only reuse the previous user message as retrieval context when the
+    current question looks like a vague follow-up ("what about that?",
+    "tell me more"), not for clear, self-contained new questions - this
+    avoids an earlier topic (e.g. pricing) leaking into an unrelated one
+    (e.g. technology)."""
+    word_count = len(user_text.split())
+    looks_like_followup = word_count <= 4 or bool(_FOLLOWUP_MARKERS.search(user_text))
+    if not looks_like_followup:
+        return None
+    return next((m.content for m in reversed(history) if m.role == "user"), None)
+
+
 def _answer_question(
     db: Session,
     session_id,
@@ -63,7 +81,7 @@ def _answer_question(
     current_lead_data: dict,
 ) -> tuple[str, bool]:
     """Answer the visitor's actual question (task 4.3, 4.8). Returns (text, used_fallback)."""
-    recent_hint = next((m.content for m in reversed(history) if m.role == "user"), None)
+    recent_hint = _followup_hint(user_text, history)
 
     result = retrieve(
         db,
