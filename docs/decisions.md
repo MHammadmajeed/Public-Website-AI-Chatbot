@@ -9,3 +9,12 @@ Reasons:
 - The React widget stays simpler, with no stream parsing needed.
 
 Revisit if: average response time becomes noticeable to visitors, or answers get much longer.
+
+# Decision: CORS Origins (Task 6.8)
+
+Decision: ALLOWED_ORIGINS is restricted to explicit, comma-separated origins only
+(no wildcards). Currently set to http://localhost:3000 for local development.
+
+When deployed to Render, this will be updated to the real production frontend
+domain(s), e.g. https://moinsystemsai.com. Wildcard origins (*) are never used,
+since the chatbot API also handles lead data.
