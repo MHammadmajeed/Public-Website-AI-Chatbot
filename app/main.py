@@ -17,6 +17,18 @@ app = FastAPI(title="MoinSystems AI Chatbot API", version="0.1.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
+MAX_BODY_SIZE = 100_000  # 100 KB - generous for chat/lead JSON payloads
+
+
+@app.middleware("http")
+async def limit_body_size(request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_BODY_SIZE:
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+    return await call_next(request)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,

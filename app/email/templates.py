@@ -1,5 +1,6 @@
 """Notification email content for a completed lead (task 6.2)."""
 
+import html
 from datetime import datetime, timezone
 
 from app.db.models import ChatMessage, ChatSession
@@ -8,9 +9,8 @@ from app.db.models import ChatMessage, ChatSession
 def _row(label: str, value: str | None) -> str:
     if not value:
         return ""
-    return f"<tr><td style='padding:4px 8px;font-weight:bold;'>{label}</td><td style='padding:4px 8px;'>{value}</td></tr>"
-
-
+    safe_value = html.escape(str(value))
+    return f"<tr><td style='padding:4px 8px;font-weight:bold;'>{label}</td><td style='padding:4px 8px;'>{safe_value}</td></tr>"
 def build_lead_notification(
     session: ChatSession,
     lead_data: dict,
@@ -23,8 +23,9 @@ def build_lead_notification(
     # A short conversation summary: the last few user messages, so the
     # team has context without reading the full transcript.
     user_lines = [m.content for m in recent_messages if m.role == "user"][-5:]
-    conversation_summary = "<br>".join(f"&bull; {line}" for line in user_lines) or "(no prior messages)"
-
+    conversation_summary = (
+        "<br>".join(f"&bull; {html.escape(line)}" for line in user_lines) or "(no prior messages)"
+    )
     rows = "".join(
         [
             _row("Full name", full_name),
