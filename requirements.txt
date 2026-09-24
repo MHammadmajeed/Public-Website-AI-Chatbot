@@ -12,4 +12,5 @@ anthropic
 pytest
 httpx
 black
-google-genai
+google-genai 
+resend==2.47.0
