@@ -1,8 +1,10 @@
 import secrets
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.chat.orchestrator import handle_message
 from app.db.models import ChatMessage, ChatSession, LeadSubmission
@@ -12,6 +14,7 @@ from app.llm.base import LLMUnavailableError
 from app.schemas.chat import ChatMessageRequest, ChatMessageResponse
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 EMAIL_FAILURE_NOTICE = (
     " (We had trouble notifying our team automatically, but your details "
@@ -36,7 +39,8 @@ def _get_or_create_session(db: Session, token: str | None, source_page: str | No
 
 
 @router.post("/messages", response_model=ChatMessageResponse)
-def post_chat_message(payload: ChatMessageRequest, db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+def post_chat_message(request: Request, payload: ChatMessageRequest, db: Session = Depends(get_db)):
     session = _get_or_create_session(db, payload.session_token, payload.source_page)
 
     user_message = ChatMessage(
