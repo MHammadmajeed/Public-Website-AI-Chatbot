@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.db.models import ChatMessage, ChatSession, EmailNotification, LeadSubmission
 from app.email.resend_adapter import send_email
 from app.email.templates import build_lead_notification
+from app.logging_config import app_logger
 
 settings = get_settings()
 
@@ -52,4 +53,16 @@ def notify_lead(db: Session, session: ChatSession, lead: LeadSubmission) -> Emai
     db.add(notification)
     db.commit()
     db.refresh(notification)
+
+    app_logger.info(
+        "lead_notification_sent" if result.success else "lead_notification_failed",
+        extra={
+            "lead_id": str(lead.id),
+            "status": notification.status,
+            "attempts": result.attempts,
+            # error_message from Resend's SDK is a short provider message,
+            # not a stack trace - safe to log (task 6.11).
+            "error": result.error_message,
+        },
+    )
     return notification

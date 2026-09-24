@@ -7,6 +7,10 @@ from slowapi.util import get_remote_address
 from app.api.v1 import chat, health, leads, sessions
 from app.core.config import get_settings
 
+from app.logging_config import app_logger, configure_logging
+
+configure_logging()
+
 settings = get_settings()
 
 # Per-IP rate limiting (task 6.7). Keyed by remote address, since this
@@ -28,6 +32,31 @@ async def limit_body_size(request, call_next):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=413, content={"detail": "Request body too large"})
     return await call_next(request)
+
+
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    import time
+    import uuid
+
+    request_id = str(uuid.uuid4())[:8]
+    start = time.monotonic()
+    response = await call_next(request)
+    latency_ms = round((time.monotonic() - start) * 1000, 1)
+
+    app_logger.info(
+        "request_completed",
+        extra={
+            "request_id": request_id,
+            "path": request.url.path,
+            "method": request.method,
+            "status_code": response.status_code,
+            "latency_ms": latency_ms,
+        },
+    )
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 app.add_middleware(
     CORSMiddleware,

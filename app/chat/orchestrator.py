@@ -26,7 +26,8 @@ from app.db.models import ChatMessage
 from app.leads import state as lead_state
 from app.llm.base import LLMMessage
 from app.llm.factory import get_provider
-from app.rag.retriever import build_context, retrieve
+from app.rag.retriever import build_context, retrieve 
+from app.logging_config import app_logger
 
 # How many prior messages (user + assistant combined) to include for
 # continuity. Kept small deliberately - task 4.4 explicitly calls for
@@ -90,6 +91,15 @@ def _answer_question(
         category=detected.category_filter,
     )
     context = build_context(result)
+
+    app_logger.info(
+        "retrieval_completed",
+        extra={
+            "intent": detected.name,
+            "has_context": result.has_context,
+            "result_count": len(getattr(result, "chunks", []) or []),
+        },
+    )
 
     if not result.has_context:
         return FALLBACK_MESSAGE, True
