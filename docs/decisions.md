@@ -18,3 +18,15 @@ Decision: ALLOWED_ORIGINS is restricted to explicit, comma-separated origins onl
 When deployed to Render, this will be updated to the real production frontend
 domain(s), e.g. https://moinsystemsai.com. Wildcard origins (*) are never used,
 since the chatbot API also handles lead data.
+
+# Verification: Secret Management (Task 6.9)
+
+Confirmed 2026-09-24:
+- No hardcoded API keys, database URLs, or passwords found in app/ source code.
+- .env is listed in .gitignore and has never been committed to git history
+  (verified with `git log --all --full-history -- .env`).
+- All secrets (DATABASE_URL, GEMINI_API_KEY, RESEND_API_KEY, APP_SECRET) load
+  from environment variables via app/core/config.py, with no fallback to
+  hardcoded values for sensitive fields.
+- On deployment, these will be set as Render environment variables/secrets
+  rather than committed anywhere.
