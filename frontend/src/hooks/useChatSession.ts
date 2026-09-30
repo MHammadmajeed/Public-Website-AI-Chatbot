@@ -1,7 +1,7 @@
 // src/hooks/useChatSession.ts
-// Manages chat widget state: session token, message history, loading/error.
+// Manages chat widget state: session token, message history, loading/error, retry.
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { sendChatMessage, ChatApiError } from "../api/chatClient";
 import type { ChatMessage } from "../types/chat";
@@ -16,23 +16,17 @@ export function useChatSession(options: UseChatSessionOptions = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastIntent, setLastIntent] = useState<string | null>(null);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
 
-  const sendMessage = useCallback(
-    async (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed) return;
+  // Tracks the text of the message currently in flight or last failed,
+  // so "Retry" can resend it without the user retyping.
+  const pendingTextRef = useRef<string | null>(null);
 
+  const deliver = useCallback(
+    async (trimmed: string) => {
       setError(null);
-
-      // Optimistically add the user's message to the UI immediately.
-      const userMessage: ChatMessage = {
-        id: uuidv4(),
-        role: "user",
-        content: trimmed,
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, userMessage]);
       setIsLoading(true);
+      pendingTextRef.current = trimmed;
 
       try {
         const response = await sendChatMessage({
@@ -41,8 +35,6 @@ export function useChatSession(options: UseChatSessionOptions = {}) {
           source_page: options.sourcePage,
         });
 
-        // First message: backend creates the session and returns its token.
-        // Every message after this must reuse it.
         setSessionToken(response.session_token);
         setLastIntent(response.intent);
 
@@ -53,12 +45,14 @@ export function useChatSession(options: UseChatSessionOptions = {}) {
           timestamp: Date.now(),
         };
         setMessages((prev) => [...prev, assistantMessage]);
+        pendingTextRef.current = null; // succeeded, nothing to retry
       } catch (err) {
         const message =
           err instanceof ChatApiError
             ? err.message
             : "Something went wrong. Please try again.";
         setError(message);
+        // pendingTextRef stays set so retry() can use it
       } finally {
         setIsLoading(false);
       }
@@ -66,12 +60,43 @@ export function useChatSession(options: UseChatSessionOptions = {}) {
     [sessionToken, options.sourcePage]
   );
 
+  const sendMessage = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      // Optimistically add the user's message to the UI immediately.
+      const userMessage: ChatMessage = {
+        id: uuidv4(),
+        role: "user",
+        content: trimmed,
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [...prev, userMessage]);
+
+      await deliver(trimmed);
+    },
+    [deliver]
+  );
+
+  const retryLastMessage = useCallback(async () => {
+    if (!pendingTextRef.current) return;
+    // Don't add a new bubble — just retry delivering the same text.
+    await deliver(pendingTextRef.current);
+  }, [deliver]);
+
   const resetSession = useCallback(() => {
     setSessionToken(null);
     setMessages([]);
     setError(null);
     setLastIntent(null);
+    setLeadSubmitted(false);
+    pendingTextRef.current = null;
   }, []);
+
+  const showLeadPrompt =
+    !leadSubmitted &&
+    (lastIntent === "pricing" || lastIntent === "contact_request");
 
   return {
     sessionToken,
@@ -79,7 +104,10 @@ export function useChatSession(options: UseChatSessionOptions = {}) {
     isLoading,
     error,
     lastIntent,
+    showLeadPrompt,
+    setLeadSubmitted,
     sendMessage,
+    retryLastMessage,
     resetSession,
   };
 }

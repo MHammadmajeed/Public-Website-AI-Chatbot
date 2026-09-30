@@ -10,7 +10,6 @@ interface MessageListProps {
 export function MessageList({ messages, isLoading }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to the latest message whenever the list changes.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
@@ -30,7 +29,7 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
       }}
     >
       {messages.length === 0 && !isLoading && (
-        <p style={{ color: "#888", fontSize: "14px", textAlign: "center" }}>
+        <p style={{ color: "#666", fontSize: "14px", textAlign: "center" }}>
           Ask us anything about MoinSystems AI.
         </p>
       )}
@@ -50,6 +49,9 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
             wordBreak: "break-word",
           }}
         >
+          <span className="sr-only">
+            {msg.role === "user" ? "You said: " : "Assistant said: "}
+          </span>
           {msg.content}
         </div>
       ))}
@@ -62,7 +64,7 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
             padding: "8px 12px",
             borderRadius: "12px",
             backgroundColor: "#f1f1f1",
-            color: "#888",
+            color: "#555",
             fontSize: "14px",
           }}
         >

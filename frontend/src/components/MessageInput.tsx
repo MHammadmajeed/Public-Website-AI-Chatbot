@@ -1,5 +1,5 @@
 // src/components/MessageInput.tsx
-import { useState, type KeyboardEvent } from "react";
+import { useState, useRef, useEffect, type KeyboardEvent } from "react";
 
 interface MessageInputProps {
   onSend: (text: string) => void;
@@ -8,15 +8,22 @@ interface MessageInputProps {
 
 export function MessageInput({ onSend, disabled }: MessageInputProps) {
   const [value, setValue] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Send focus to the input once, when the widget first mounts,
+  // so keyboard/screen-reader users land straight in the conversation.
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   const handleSend = () => {
     if (!value.trim() || disabled) return;
     onSend(value);
     setValue("");
+    textareaRef.current?.focus();
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Enter sends; Shift+Enter adds a new line.
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -33,6 +40,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
       }}
     >
       <textarea
+        ref={textareaRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -53,7 +61,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
       <button
         onClick={handleSend}
         disabled={disabled || !value.trim()}
-        aria-label="Send message"
+        aria-label={disabled ? "Sending message" : "Send message"}
         style={{
           padding: "8px 16px",
           borderRadius: "8px",
