@@ -7,7 +7,9 @@ in chat (tasks 5.4, 5.7, 5.8, 5.9). Saves to lead_submission once all
 required fields are present.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
 from app.db.models import ChatSession, LeadSubmission
@@ -15,8 +17,8 @@ from app.db.session import get_db
 from app.leads import state as lead_state
 from app.leads.validation import validate_field
 from app.schemas.leads import LeadCaptureRequest, LeadCaptureResponse
-
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 OPTIONAL_FIELDS = [
     "company_name",
@@ -29,7 +31,8 @@ OPTIONAL_FIELDS = [
 
 
 @router.post("", response_model=LeadCaptureResponse)
-def capture_lead(payload: LeadCaptureRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def capture_lead(request: Request, payload: LeadCaptureRequest, db: Session = Depends(get_db)):
     session = (
         db.query(ChatSession).filter(ChatSession.session_token == payload.session_token).first()
     )
