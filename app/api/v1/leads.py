@@ -7,6 +7,8 @@ in chat (tasks 5.4, 5.7, 5.8, 5.9). Saves to lead_submission once all
 required fields are present.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -14,9 +16,13 @@ from sqlalchemy.orm import Session
 
 from app.db.models import ChatSession, LeadSubmission
 from app.db.session import get_db
+from app.email.notify import notify_lead
 from app.leads import state as lead_state
 from app.leads.validation import validate_field
 from app.schemas.leads import LeadCaptureRequest, LeadCaptureResponse
+
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
@@ -89,6 +95,16 @@ def capture_lead(request: Request, payload: LeadCaptureRequest, db: Session = De
     session.lead_data = data
     db.commit()
     db.refresh(lead)
+
+    # Notify the team by email. A failure here must never break lead saving.
+    try:
+        notification = notify_lead(db, session, lead)
+        logger.info(
+            "Lead notification processed",
+            extra={"lead_id": str(lead.id), "status": notification.status},
+        )
+    except Exception:
+        logger.exception("Lead notification failed", extra={"lead_id": str(lead.id)})
 
     return LeadCaptureResponse(
         lead_state=session.lead_state,
